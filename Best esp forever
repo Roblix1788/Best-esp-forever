@@ -1,0 +1,63 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Create a template Highlight and BillboardGui
+local highlightTemplate = Instance.new("Highlight")
+highlightTemplate.Archivable = true
+highlightTemplate.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+highlightTemplate.Enabled = true
+highlightTemplate.FillTransparency = 1 -- Make the fill completely transparent
+highlightTemplate.OutlineTransparency = 0
+
+local billboardGuiTemplate = Instance.new("BillboardGui")
+billboardGuiTemplate.Size = UDim2.new(2, 0, 2, 0)
+billboardGuiTemplate.AlwaysOnTop = true
+
+local textLabelTemplate = Instance.new("TextLabel", billboardGuiTemplate)
+textLabelTemplate.Size = UDim2.new(1, 0, 1, 0)
+textLabelTemplate.TextColor3 = Color3.new(1, 1, 1)
+textLabelTemplate.BackgroundTransparency = 1
+textLabelTemplate.TextScaled = true
+
+local playerHighlights = {}
+
+local function highlightPlayer(player)
+    local character = player.Character or player.CharacterAdded:Wait()
+    playerHighlights[player] = character
+
+    -- Create Highlight and BillboardGui instances from templates
+    local highlight = highlightTemplate:Clone()
+    highlight.Parent = character
+
+    -- Set RGB color for highlight
+    local r, g, b = 255, 0, 0 -- Adjust these values to your desired RGB color
+    highlight.FillColor = Color3.fromRGB(r, g, b)
+    highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+
+    local billboardGui = billboardGuiTemplate:Clone()
+    billboardGui.Parent = character
+    billboardGui.TextLabel.Text = player.Name
+end
+
+local function removeHighlight(player)
+    local character = playerHighlights[player]
+    if character then
+        local highlight = character:FindFirstChild("Highlight")
+        if highlight then
+            highlight:Destroy()
+        end
+        local billboardGui = character:FindFirstChild("BillboardGui")
+        if billboardGui then
+            billboardGui:Destroy()
+        end
+        playerHighlights[player] = nil
+    end
+end
+
+-- Highlight all existing players
+for _, player in pairs(Players:GetPlayers()) do
+    highlightPlayer(player)
+end
+
+Players.PlayerAdded:Connect(highlightPlayer)
+Players.PlayerRemoving:Connect(removeHighlight)
